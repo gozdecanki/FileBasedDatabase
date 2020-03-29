@@ -37,14 +37,52 @@ namespace FileBasedDatabase.Controllers
         }
 
         [Route("home/manageVisitor/{id}")]
-        public IActionResult ManageVisitor()
+        public IActionResult ManageVisitor(Guid id)
         {
-            return View();
+            ViewBag.Id = id;
+
+            return View(Helper.JsonHelper.GetDatabase());
         }
+
+        public IActionResult SetVisitor([FromBody] Data.Dtos.VisitorDto visitor)
+        {
+            var baseDatabase = Helper.JsonHelper.GetDatabase();
+
+            if (visitor.Id==Guid.Empty)//yeni kayıt
+            {
+                var visitorEntity = new Data.Entities.Visitor()
+                {
+                    Name = visitor.Name,
+                    Surname = visitor.Surname,
+                    Id = Guid.NewGuid()
+                };
+                baseDatabase.Visitors.Add(visitorEntity);
+                Helper.JsonHelper.SetDatabase(baseDatabase);
+            }
+            else//güncelleme
+            {
+                var visitorEntity = baseDatabase.Visitors.SingleOrDefault(a => a.Id == visitor.Id);
+
+                if (visitorEntity != null)
+                {
+                    visitorEntity.Name = visitor.Name;
+                    visitorEntity.Surname = visitor.Surname;
+                    Helper.JsonHelper.SetDatabase(baseDatabase);
+                }
+            }
+
+           
+            return new JsonResult(baseDatabase);
+        }
+
         [Route("home/managebook/{id}")]
-        public IActionResult ManageBook()
+        public IActionResult ManageBook(Guid id)
         {
-            return View();
+            ViewBag.Id = id;
+            return View(Helper.JsonHelper.GetDatabase());
         }
+
+        
+
     }
 }
