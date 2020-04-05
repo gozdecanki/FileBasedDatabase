@@ -69,9 +69,7 @@ namespace FileBasedDatabase.Controllers
                     visitorEntity.Surname = visitor.Surname;
                     Helper.JsonHelper.SetDatabase(baseDatabase);
                 }
-            }
-
-           
+            }          
             return new JsonResult(baseDatabase);
         }
 
@@ -82,7 +80,46 @@ namespace FileBasedDatabase.Controllers
             return View(Helper.JsonHelper.GetDatabase());
         }
 
-        
+
+        public IActionResult SetBook([FromBody] Data.Dtos.BookDto bookDto)
+        {
+            var baseDatabase = Helper.JsonHelper.GetDatabase();
+
+            if (bookDto.Id == Guid.Empty)//yeni kayıt
+            {
+                var bookEntity = new Data.Entities.Book()
+                {
+                    Name = bookDto.Name,                  
+                    Id = Guid.NewGuid()
+                };
+                baseDatabase.Books.Add(bookEntity);
+                Helper.JsonHelper.SetDatabase(baseDatabase);
+            }
+            else//güncelleme
+            {
+                var bookEntity = baseDatabase.Books.SingleOrDefault(a => a.Id == bookDto.Id);
+
+                if (bookEntity != null)
+                {
+                    bookEntity.Name = bookDto.Name;              
+                    Helper.JsonHelper.SetDatabase(baseDatabase);
+                }
+            }
+            return new JsonResult(baseDatabase);
+        }
+
+        [Route("/home/gozde/{id}")]
+        public IActionResult DeleteBook(Guid id)
+        {
+            var baseDatabase = Helper.JsonHelper.GetDatabase();
+
+            var bookEntity = baseDatabase.Books.SingleOrDefault(a => a.Id == id);
+            baseDatabase.Books.Remove(bookEntity);
+            Helper.JsonHelper.SetDatabase(baseDatabase);
+            return RedirectToAction("Index", "Home");
+        }
+      
+            
 
     }
 }
